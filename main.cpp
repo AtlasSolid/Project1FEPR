@@ -3,6 +3,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 using namespace std;
 
@@ -26,7 +29,7 @@ int main(int argc, char * argv[]) {
     //int p[2];
     //for implementing pipes
 
-    char *myargv[2]; //array of char pointers
+    char* myargv[2]; //array of char pointers
 
     int rc = fork(); //initiate fork
 
@@ -41,7 +44,7 @@ int main(int argc, char * argv[]) {
             printf("Child 1: pid:%d\n", (int) getpid()); 
 
             myargv[0] = pathName; //program to execute, either ls or wc depending on cmd line args
-            myargv[1] = 0; //file that ls or wc would be reading from, main.cpp is placeholder. -o and -a would replace this value with whatever file we want to read
+            myargv[1] = fileName; //file that ls or wc would be reading from
 
             execvp(pathName, myargv); //first draft of exec call, also checks if the path leads to an executable file
 
@@ -69,21 +72,21 @@ bool HandleOptions(int argc, char ** argv, char** pName, char** fName) {
     while ((c = getopt(argc, argv, "1:dt:vi:o:a:2:")) != -1) {
         argTrue = true;
 
-		switch (c) {
+		switch (c){
+            default:
+            case '1': //if '-1' is present
             {
-                case '1': //if case '-1' is present
                 *pName = optarg;
+                break;
 
             }
 
-            break;
+            case 'i': //if '-i' is present
+            {
+                *fName = optarg;
+                break;
 
-            /* case '2': //if case '-2' is present
-            *secondPName = optarg;
-            break; */
-
-
-
+            }
 
         }
 
