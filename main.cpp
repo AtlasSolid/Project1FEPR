@@ -17,8 +17,8 @@ int main(int argc, char * argv[]) {
     void printError();
 
 
-    char * pathName = nullptr;
-    char * fileName = nullptr;
+    char * pathName = 0;
+    char * fileName = 0;
 
     //if no arguments provided, print error message, do not fork, do not pipe, do not exec, end process here
     if (HandleOptions(argc, argv, &pathName, &fileName) == false) {
@@ -43,14 +43,18 @@ int main(int argc, char * argv[]) {
         myargv[0] = strdup(pathName); //program to execute, either ls or wc depending on cmd line args
         myargv[1] = 0; //file that ls or wc would be reading from
 
-        /* if (*fileName != NULL)
+        /* if (fileName == 0)
+        {
+            myargv[1] = 0;
+        }
+        else
         {
             myargv[1] = strdup(fileName);
         } */
-        /*if -i isn't involved, this if statement causes the program to end right after the child's pid is printed.
-          if you do use -i, it causes the exec call to fail. any ideas on why this is? */
+        /*
+          if you use -i, this if statement causes the exec call to fail. any ideas on why this is? */
         
-        execvp(pathName, myargv); //first draft of exec call, also checks if the path leads to an executable file
+        execvp(myargv[0], myargv); //first draft of exec call, also checks if the path leads to an executable file
 
         cout << "Failed exec call" << endl; //this line shouldn't execute unless execvp() screwed up
     }
