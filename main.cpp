@@ -35,7 +35,7 @@ int main(int argc, char * argv[]) {
 
     char * myargv[2]; //array of char pointers
 
-    if (secondPathName == 0)
+    if (secondPathName == 0) //if '-2' is not in the arguments
     {
         int rc = fork(); //parent forks child 1
 
@@ -52,18 +52,15 @@ int main(int argc, char * argv[]) {
             myargv[0] = strdup(pathName); //program to execute, either ls or wc depending on cmd line args
             myargv[1] = 0; //file that ls or wc would be reading from
 
-            /* if (fileName == 0)
+            if (fileName != 0)
             {
-                myargv[1] = 0;
-            }
-            else
-            {
-                myargv[1] = strdup(fileName);
-            } */
-            /*
-                if you use -i, this if statement causes the exec call to fail. any ideas on why this is? */
+                int fd = open(fileName, S_IRUSR);
+                close(0);
+                dup(fd);
+                close(fd);
+            } //might work, might not. pray for me
             
-            execvp(myargv[0], myargv); //executes ls or wc, also    checks if the path leads to an executable file
+            execvp(myargv[0], myargv); //executes ls or wc, also checks if the path leads to an executable file
 
             cout << "Failed exec call" << endl; //this line shouldn't execute unless execvp() screwed up
         }
@@ -109,68 +106,67 @@ int main(int argc, char * argv[]) {
                 myargv[0] = strdup(pathName);
                 myargv[1] = 0;
 
-                /* if (fileName == 0)
+                if (fileName != 0)
                 {
-                    myargv[1] = 0;
-                }
-                else
-                {
-                    myargv[1] = strdup(fileName);
-                } */
-                /*
-                    if you use -i, this if statement causes the exec call to fail. any ideas on why this is? */
+                    int fd = open(fileName, O_SYNC, S_IRUSR);
+                    close(0);
+                    dup(fd);
+                    close(fd);
+                } //might work, might not. pray for me
                 
                 execvp(myargv[0], myargv);
 
                 cout << "Failed exec call" << endl;
+
+                int rc2 = fork(); //child 1 forks child 2
+
+                if (rc2 < 0)
+                { 
+                    fprintf(stderr, "child 2 fork failed\n");
+
+                    exit(1); 
+                }
+                else if (rc2 == 0)
+                {
+                    close(p[1]); //close write side of the pipe
+                    close(0); //close STDIN to make it available
+
+                    dup(p[0]); //dup read side of the pipe
+
+                    close(p[1]); //close original read side of pipe, connection still in File Descriptor 0
+
+                    printf("Child 2: pid:%d\n", (int) getpid()); 
+
+                    myargv[0] = strdup(secondPathName);
+                    myargv[1] = 0;
+
+                    if (oFileName != 0)
+                    {
+                        int fd2 = open(oFileName, O_SYNC, S_IRWXU);
+                        close(1);
+                        dup(fd2);
+                        close(fd2);
+                    }
+                    else if (aFileName != 0)
+                    {
+                        int fd2 = open(oFileName, O_APPEND, S_IRWXU);
+                        close(1);
+                        dup(fd2);
+                        close(fd2);   
+                    }
+
+                    execvp(myargv[0], myargv);
+
+                    cout << "Failed exec call" << endl; //this line shouldn't execute unless execvp() screwed up
+                }
+                else 
+                {
+                    wait(NULL);
+                }
             }
             else 
             {
                 wait(NULL);
-            }
-
-            int rc2 = fork(); //child 1 forks child 2
-
-            if (rc2 < 0)
-            { 
-                fprintf(stderr, "child 2 fork failed\n");
-
-                exit(1); 
-            }
-            else if (rc2 == 0)
-            {
-                close(p[1]); //close write side of the pipe
-                close(0); //close STDIN to make it available
-
-                dup(p[0]); //dup read side of the pipe
-
-                close(p[1]); //close original read side of pipe, connection still in File Descriptor 0
-
-
-
-                printf("Child 2: pid:%d\n", (int) getpid()); 
-
-                myargv[0] = strdup(pathName);
-                myargv[1] = 0;
-
-                /* if (fileName == 0)
-                {
-                    myargv[1] = 0;
-                }
-                else
-                {
-                    myargv[1] = strdup(fileName);
-                } */
-                /*
-                    if you use -i, this if statement causes the exec call to fail. any ideas on why this is? */
-                
-                execvp(myargv[0], myargv); //first draft of exec call, also checks if the path leads to an executable file
-
-                cout << "Failed exec call" << endl; //this line shouldn't execute unless execvp() screwed up
-            }
-            else 
-            {
-                wait(NULL); //parent waits for child process to finish, i.e. waits for execvp to properly output to the console
             }
 
 
