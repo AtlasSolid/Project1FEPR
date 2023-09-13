@@ -22,35 +22,44 @@ int main(int argc, char * argv[]) {
 
     //if no arguments provided, print error message, do not fork, do not pipe, do not exec, end process here
     if (HandleOptions(argc, argv, &pathName, &fileName) == false) {
-		printError(); //this keeps executing even when the right arguments are given and i'm not sure why
+		printError();
 		return 1;
 	}
 
-    //int p[2];
-    //for implementing pipes
-
-    char* myargv[2]; //array of char pointers
+    char * myargv[2]; //array of char pointers
 
     int rc = fork(); //initiate fork
 
-        if (rc < 0) // if the fork failed, print error and exit
-        { 
-            fprintf(stderr, "fork failed\n");
+    if (rc < 0) // if the fork failed, print error and exit
+    { 
+        fprintf(stderr, "fork failed\n");
 
-            exit(1); 
-        }
-        else if (rc == 0) //if fork was successful
+        exit(1); 
+    }
+    else if (rc == 0) //if fork was successful
+    {
+        printf("Child 1: pid:%d\n", (int) getpid()); 
+
+        myargv[0] = strdup(pathName); //program to execute, either ls or wc depending on cmd line args
+        myargv[1] = 0; //file that ls or wc would be reading from
+
+        /* if (*fileName != NULL)
         {
-            printf("Child 1: pid:%d\n", (int) getpid()); 
+            myargv[1] = strdup(fileName);
+        } */
+        /*if -i isn't involved, this if statement causes the program to end right after the child's pid is printed.
+          if you do use -i, it causes the exec call to fail. any ideas on why this is? */
+        
+        execvp(pathName, myargv); //first draft of exec call, also checks if the path leads to an executable file
 
-            myargv[0] = pathName; //program to execute, either ls or wc depending on cmd line args
-            myargv[1] = fileName; //file that ls or wc would be reading from
+        cout << "Failed exec call" << endl; //this line shouldn't execute unless execvp() screwed up
+    }
+    else 
+    {
+        wait(NULL);
+    }
 
-            execvp(pathName, myargv); //first draft of exec call, also checks if the path leads to an executable file
 
-            cout << "Failed exec call" << endl; //this line shouldn't execute unless execvp() screwed up
-        }
-    
 
     return 0;
 
@@ -68,15 +77,20 @@ bool HandleOptions(int argc, char ** argv, char** pName, char** fName) {
 
     bool argTrue = false;
 
+    //int p[2];
+    //for implementing pipes
+
     //checks args to see if they mach any valid command line options, execute switch statements if this is the case
     while ((c = getopt(argc, argv, "1:dt:vi:o:a:2:")) != -1) {
         argTrue = true;
+        
 
 		switch (c){
             default:
             case '1': //if '-1' is present
             {
                 *pName = optarg;
+    
                 break;
 
             }
