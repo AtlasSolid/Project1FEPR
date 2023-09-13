@@ -149,7 +149,7 @@ int main(int argc, char * argv[]) {
                     }
                     else if (aFileName != 0)
                     {
-                        int fd2 = open(oFileName, O_APPEND, S_IRWXU);
+                        int fd2 = open(aFileName, O_APPEND, S_IRWXU);
                         close(1);
                         dup(fd2);
                         close(fd2);   
