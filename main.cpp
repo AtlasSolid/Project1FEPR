@@ -85,7 +85,7 @@ bool HandleOptions(int argc, char ** argv, char** pName, char** fName) {
     //for implementing pipes
 
     //checks args to see if they mach any valid command line options, execute switch statements if this is the case
-    while ((c = getopt(argc, argv, "1:dt:vi:o:a:2:")) != -1) {
+    while ((c = getopt(argc, argv, "1:Dt:vi:o:a:2:")) != -1) {
         argTrue = true;
         
 
@@ -103,6 +103,12 @@ bool HandleOptions(int argc, char ** argv, char** pName, char** fName) {
             {
                 *fName = optarg;
                 break;
+
+            }
+            case 'D': //if '-D' is present
+            {
+                char cwd[128];
+                cout << getcwd(cwd, sizeof(cwd)) << endl;
 
             }
 
