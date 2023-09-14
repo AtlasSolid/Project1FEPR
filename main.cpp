@@ -42,6 +42,7 @@ int main(int argc, char * argv[]) {
     if (secondPathName == 0) //if '-2' is not in the arguments
     {
         pid_t rc = fork(); //parent forks child 1
+        int cVal = 0;
 
         if (rc < 0) // if the fork failed, print error and exit
         { 
@@ -51,6 +52,7 @@ int main(int argc, char * argv[]) {
         }
         else if (rc == 0) //if fork was successful
         {
+            cVal = rc;
 
             myargv[0] = strdup(pathName); //program to execute, either ls or wc depending on cmd line args
             myargv[1] = 0; //file that ls or wc would be reading from
@@ -70,7 +72,7 @@ int main(int argc, char * argv[]) {
         else //parent goes down this path
         {
             wait(NULL); //parent waits for child process to finish, i.e. waits for execvp to properly output to the console
-            printf("Child 1: %d\n", rc);
+            printf("Child 1: %d returns: %d\n", rc, cVal);
         }
 
     }
