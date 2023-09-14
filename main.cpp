@@ -51,7 +51,7 @@ int main(int argc, char * argv[]) {
         }
         else if (rc == 0) //if fork was successful
         {
-            printf("Child 1: pid:%d\n", (int) getpid()); 
+            cout << "Child 1: " << getpid() << endl; 
 
             myargv[0] = strdup(pathName); //program to execute, either ls or wc depending on cmd line args
             myargv[1] = 0; //file that ls or wc would be reading from
@@ -109,9 +109,9 @@ int main(int argc, char * argv[]) {
 
                 close(p[1]); //close original write side of pipe, connection still in File Descriptor 1
 
-
-
-                printf("Child 1: pid:%d\n", (int) getpid()); 
+                //printf("Child 1: pid:%d\n", (int) getpid()); 
+                
+                cout << "Child 1: " << getpid() << endl;
 
                 myargv[0] = strdup(pathName);
                 myargv[1] = 0;
@@ -123,70 +123,67 @@ int main(int argc, char * argv[]) {
                     dup(fd);
                     close(fd);
                 }
-                
-                //execvp(myargv[0], myargv);
+                execvp(myargv[0], myargv);
 
-                //cout << "Failed exec call" << endl;
-
-                rc2 = fork(); //child 1 forks child 2
-
-                if (rc2 < 0)
-                { 
-                    fprintf(stderr, "child 2 fork failed\n");
-
-                    exit(1); 
-                }
-                else if (rc2 == 0)
-                {
-                    close(p[1]); //close write side of the pipe
-                    close(0); //close STDIN to make it available
-
-                    dup(p[0]); //dup read side of the pipe
-
-                    close(p[0]); //close original read side of pipe, connection still in File Descriptor 0
-
-                    printf("Child 2: pid:%d\n", (int) getpid()); 
-
-                    myargv[0] = strdup(secondPathName);
-                    myargv[1] = 0;
-
-                    if (oFileName != 0) //if -o case present, wire -o file into standard output, last in the sequence
-                    {
-                        int fd2 = open(oFileName, O_SYNC, S_IRWXU); //overwrite mode
-                        close(1);
-                        dup(fd2);
-                        close(fd2);
-                    }
-                    else if (aFileName != 0) //if -a case present, wire -a file into standard output, last in the sequence
-                    {
-                        int fd2 = open(aFileName, O_APPEND, S_IRWXU); //append mode
-                        close(1);
-                        dup(fd2);
-                        close(fd2);   
-                    }
-
-                    execvp(myargv[0], myargv);
-
-                    cout << "Failed exec call" << endl; //this line shouldn't execute unless execvp() screwed up
-                }
-                else //child 1 goes down this path
-                {
-                    execvp(myargv[0], myargv);
-
-                    cout << "Failed exec call" << endl;
-                }
+                cout << "Failed exec call" << endl;
             }
             else //parent goes down this path
-            {
+            {  
 
-                close(p[0]);
-                close(p[1]); //closing read and write sides of pipe
-                waitpid(rc, NULL, 0); //wait until c1 is complete
-                //printf(rc, "\n");
-                waitpid(rc2, NULL, 0); //wait until c2 is complete
-                //printf(rc2, "\n");
 
             }
+            rc2 = fork(); //parent forks child 2
+
+            if (rc2 < 0)
+            { 
+                fprintf(stderr, "child 2 fork failed\n");
+
+                exit(1); 
+            }
+            else if (rc2 == 0)
+            {
+                close(p[1]); //close write side of the pipe
+                close(0); //close STDIN to make it available
+
+                dup(p[0]); //dup read side of the pipe
+
+                close(p[0]); //close original read side of pipe, connection still in File Descriptor 0
+
+                cout << "Child 2: " << getpid() << endl; 
+
+                myargv[0] = strdup(secondPathName);
+                myargv[1] = 0;
+
+                if (oFileName != 0) //if -o case present, wire -o file into standard output, last in the sequence
+                {
+                    int fd2 = open(oFileName, O_SYNC, S_IRWXU); //overwrite mode
+                    close(1);
+                    dup(fd2);
+                    close(fd2);
+                }
+                else if (aFileName != 0) //if -a case present, wire -a file into standard output, last in the sequence
+                {
+                    int fd2 = open(aFileName, O_APPEND, S_IRWXU); //append mode
+                    close(1);
+                    dup(fd2);
+                    close(fd2);   
+                }
+
+                execvp(myargv[0], myargv);
+
+                cout << "Failed exec call" << endl; //this line shouldn't execute unless execvp() screwed up
+            }
+            else
+            {
+
+            }
+
+            close(p[0]);
+            close(p[1]); //closing read and write sides of pipe
+            waitpid(rc, NULL, 0); //wait until c1 is complete
+            printf("%d", rc);
+            waitpid(rc2, NULL, 0); //wait until c2 is complete
+            printf("%d", rc2);
 
         }
     
