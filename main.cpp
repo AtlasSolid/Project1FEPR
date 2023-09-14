@@ -190,8 +190,8 @@ int main(int argc, char * argv[]) {
 
             close(p[0]);
             close(p[1]); //closing read and write sides of pipe
-            wait(NULL); //wait until c1 is complete
-            wait(NULL); //wait until c2 is complete
+            waitpid(rc, NULL, 0); //wait until c1 is complete
+            waitpid(rc2, NULL, 0); //wait until c2 is complete
             printf("Child 2: %d returns: %d\n", rc2, cVal2);
             printf("Child 1: %d returns: %d\n", rc, cVal1);
 
@@ -220,8 +220,7 @@ bool HandleOptions(int argc, char ** argv, char** pName, char** sPName, char** f
 
     //checks args to see if they mach any valid command line options, execute switch statements if this is the case
     while ((c = getopt(argc, argv, "1:Dt:i:o:a:2:")) != -1) {
-        argTrue = true;
-        
+        argTrue = true;       
 
 		switch (c){
             default:
