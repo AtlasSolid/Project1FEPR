@@ -51,7 +51,6 @@ int main(int argc, char * argv[]) {
         }
         else if (rc == 0) //if fork was successful
         {
-            cout << "Child 1: " << getpid() << endl; 
 
             myargv[0] = strdup(pathName); //program to execute, either ls or wc depending on cmd line args
             myargv[1] = 0; //file that ls or wc would be reading from
@@ -71,6 +70,7 @@ int main(int argc, char * argv[]) {
         else //parent goes down this path
         {
             wait(NULL); //parent waits for child process to finish, i.e. waits for execvp to properly output to the console
+            printf("Child 1: %d\n", rc);
         }
 
     }
@@ -81,6 +81,9 @@ int main(int argc, char * argv[]) {
 
         int rc = 0;
         int rc2 = 0;
+
+        int cVal1 = 0;
+        int cVal2 = 0;
 
         int pFail = pipe(p);
 
@@ -102,6 +105,8 @@ int main(int argc, char * argv[]) {
             }
             else if (rc == 0)
             {
+                cVal1 = rc;
+
                 close(p[0]); //not reading from the pipe, so close read side
                 close(1); //close STDOUT to make it available
 
@@ -111,7 +116,7 @@ int main(int argc, char * argv[]) {
 
                 //printf("Child 1: pid:%d\n", (int) getpid()); 
                 
-                cout << "Child 1: " << getpid() << endl;
+                //cout << "Child 1: " << getpid() << endl;
 
                 myargv[0] = strdup(pathName);
                 myargv[1] = 0;
@@ -132,6 +137,7 @@ int main(int argc, char * argv[]) {
 
 
             }
+
             rc2 = fork(); //parent forks child 2
 
             if (rc2 < 0)
@@ -142,6 +148,8 @@ int main(int argc, char * argv[]) {
             }
             else if (rc2 == 0)
             {
+                cVal2 = rc2;
+
                 close(p[1]); //close write side of the pipe
                 close(0); //close STDIN to make it available
 
@@ -149,7 +157,7 @@ int main(int argc, char * argv[]) {
 
                 close(p[0]); //close original read side of pipe, connection still in File Descriptor 0
 
-                cout << "Child 2: " << getpid() << endl; 
+                //cout << "Child 2: " << getpid() << endl; 
 
                 myargv[0] = strdup(secondPathName);
                 myargv[1] = 0;
@@ -180,10 +188,10 @@ int main(int argc, char * argv[]) {
 
             close(p[0]);
             close(p[1]); //closing read and write sides of pipe
-            waitpid(rc, NULL, 0); //wait until c1 is complete
-            printf("%d", rc);
-            waitpid(rc2, NULL, 0); //wait until c2 is complete
-            printf("%d", rc2);
+            wait(NULL); //wait until c1 is complete
+            wait(NULL); //wait until c2 is complete
+            printf("Child 2: %d returns: %d\n", rc2, cVal2);
+            printf("Child 1: %d returns: %d\n", rc, cVal1);
 
         }
     
