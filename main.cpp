@@ -1,3 +1,5 @@
+//Noah and Katie
+
 #include <iostream>
 #include <getopt.h>
 #include <string.h>
@@ -39,7 +41,7 @@ int main(int argc, char * argv[]) {
 
     if (secondPathName == 0) //if '-2' is not in the arguments
     {
-        int rc = fork(); //parent forks child 1
+        pid_t rc = fork(); //parent forks child 1
 
         if (rc < 0) // if the fork failed, print error and exit
         { 
@@ -60,13 +62,13 @@ int main(int argc, char * argv[]) {
                 close(0);
                 dup(fd);
                 close(fd);
-            } //might work, might not. pray for me
+            }
             
             execvp(myargv[0], myargv); //executes ls or wc, also checks if the path leads to an executable file
 
             cout << "Failed exec call" << endl; //this line shouldn't execute unless execvp() screwed up
         }
-        else 
+        else //parent goes down this path
         {
             wait(NULL); //parent waits for child process to finish, i.e. waits for execvp to properly output to the console
         }
@@ -74,6 +76,9 @@ int main(int argc, char * argv[]) {
     }
     else
     {
+        //int* rcP = nullptr;
+        //int* rc2P = nullptr;
+
         int rc = 0;
         int rc2 = 0;
 
@@ -111,13 +116,13 @@ int main(int argc, char * argv[]) {
                 myargv[0] = strdup(pathName);
                 myargv[1] = 0;
 
-                if (fileName != 0)
+                if (fileName != 0) //if -i case present, wire -i file into standard input, first in the sequence
                 {
-                    int fd = open(fileName, O_SYNC, S_IRUSR);
+                    int fd = open(fileName, O_SYNC, S_IRUSR); //read mode
                     close(0);
                     dup(fd);
                     close(fd);
-                } //might work, might not. pray for me
+                }
                 
                 //execvp(myargv[0], myargv);
 
@@ -145,16 +150,16 @@ int main(int argc, char * argv[]) {
                     myargv[0] = strdup(secondPathName);
                     myargv[1] = 0;
 
-                    if (oFileName != 0)
+                    if (oFileName != 0) //if -o case present, wire -o file into standard output, last in the sequence
                     {
-                        int fd2 = open(oFileName, O_SYNC, S_IRWXU);
+                        int fd2 = open(oFileName, O_SYNC, S_IRWXU); //overwrite mode
                         close(1);
                         dup(fd2);
                         close(fd2);
                     }
-                    else if (aFileName != 0)
+                    else if (aFileName != 0) //if -a case present, wire -a file into standard output, last in the sequence
                     {
-                        int fd2 = open(aFileName, O_APPEND, S_IRWXU);
+                        int fd2 = open(aFileName, O_APPEND, S_IRWXU); //append mode
                         close(1);
                         dup(fd2);
                         close(fd2);   
@@ -164,21 +169,22 @@ int main(int argc, char * argv[]) {
 
                     cout << "Failed exec call" << endl; //this line shouldn't execute unless execvp() screwed up
                 }
-                else 
+                else //child 1 goes down this path
                 {
                     execvp(myargv[0], myargv);
 
                     cout << "Failed exec call" << endl;
                 }
             }
-            else 
+            else //parent goes down this path
             {
+
                 close(p[0]);
-                close(p[1]);
-                wait(rc);
-                printf(rc, "\n");
-                wait(rc2);
-                printf(rc2, "\n");
+                close(p[1]); //closing read and write sides of pipe
+                waitpid(rc, NULL, 0); //wait until c1 is complete
+                //printf(rc, "\n");
+                waitpid(rc2, NULL, 0); //wait until c2 is complete
+                //printf(rc2, "\n");
 
             }
 
@@ -246,7 +252,7 @@ bool HandleOptions(int argc, char ** argv, char** pName, char** sPName, char** f
 
                 break;
             }
-            case 't': //if '-a' is present
+            case 't': //if '-t' is present
             {
                 *dName = optarg;
 
