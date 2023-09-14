@@ -74,6 +74,9 @@ int main(int argc, char * argv[]) {
     }
     else
     {
+        int rc = 0;
+        int rc2 = 0;
+
         int pFail = pipe(p);
 
         if (pFail < 0) //if pipe failed, print error and exit
@@ -84,7 +87,7 @@ int main(int argc, char * argv[]) {
         }
         else
         {
-            int rc = fork(); //parent forks child 1
+            rc = fork(); //parent forks child 1
 
             if (rc < 0)
             { 
@@ -116,11 +119,11 @@ int main(int argc, char * argv[]) {
                     close(fd);
                 } //might work, might not. pray for me
                 
-                execvp(myargv[0], myargv);
+                //execvp(myargv[0], myargv);
 
-                cout << "Failed exec call" << endl;
+                //cout << "Failed exec call" << endl;
 
-                int rc2 = fork(); //child 1 forks child 2
+                rc2 = fork(); //child 1 forks child 2
 
                 if (rc2 < 0)
                 { 
@@ -163,19 +166,24 @@ int main(int argc, char * argv[]) {
                 }
                 else 
                 {
-                    wait(NULL);
+                    execvp(myargv[0], myargv);
+
+                    cout << "Failed exec call" << endl;
                 }
             }
             else 
             {
-                wait(NULL);
+                close(p[0]);
+                close(p[1]);
+                wait(rc);
+                printf(rc, "\n");
+                wait(rc2);
+                printf(rc2, "\n");
+
             }
 
-
         }
-        
-        close(p[0]);
-        close(p[1]);
+    
 
     }
 
