@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <filesystem>
 
 using namespace std;
 
@@ -15,7 +16,7 @@ int main(int argc, char * argv[]) {
 
 
     //checks the command line args
-    bool HandleOptions(int argc, char ** argv, char**, char**, char**, char**, char**);
+    bool HandleOptions(int argc, char ** argv, char**, char**, char**, char**, char**, char**);
     void printError();
 
 
@@ -24,9 +25,10 @@ int main(int argc, char * argv[]) {
     char * fileName = 0;
     char * oFileName = 0;
     char * aFileName = 0;
+    char * dirName = 0;
 
     //if no arguments provided, print error message, do not fork, do not pipe, do not exec, end process here
-    if (HandleOptions(argc, argv, &pathName, &secondPathName, &fileName, &oFileName, &aFileName) == false) {
+    if (HandleOptions(argc, argv, &pathName, &secondPathName, &fileName, &oFileName, &aFileName, &dirName) == false) {
 		printError();
 		return 1;
 	}
@@ -133,7 +135,7 @@ int main(int argc, char * argv[]) {
 
                     dup(p[0]); //dup read side of the pipe
 
-                    close(p[1]); //close original read side of pipe, connection still in File Descriptor 0
+                    close(p[0]); //close original read side of pipe, connection still in File Descriptor 0
 
                     printf("Child 2: pid:%d\n", (int) getpid()); 
 
@@ -190,7 +192,7 @@ void printError()
 
 }
 
-bool HandleOptions(int argc, char ** argv, char** pName, char** sPName, char** fName, char** oName, char** aName) {
+bool HandleOptions(int argc, char ** argv, char** pName, char** sPName, char** fName, char** oName, char** aName, char** dName) {
     int c;
 
     bool argTrue = false;
@@ -230,12 +232,21 @@ bool HandleOptions(int argc, char ** argv, char** pName, char** sPName, char** f
                 break;
 
             }
-            case 'a': //if '-a- is present
+            case 'a': //if '-a' is present
             {
                 *aName = optarg;
 
                 break;
             }
+            case 't': //if '-a' is present
+            {
+                *dName = optarg;
+
+                chdir(*dName);
+
+                break;
+            }
+
             case 'D': //if '-D' is present
             {
                 char cwd[128];
