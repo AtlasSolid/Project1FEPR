@@ -1,4 +1,4 @@
-//Noah and Katie
+//Noah Wilson and Katie Wilde
 
 #include <iostream>
 #include <getopt.h>
