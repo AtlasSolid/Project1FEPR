@@ -89,8 +89,8 @@ int main(int argc, char * argv[]) {
         //int* rcP = nullptr;
         //int* rc2P = nullptr;
 
-        int rc = 0;
-        int rc2 = 0;
+        pid_t rc = 0;
+        pid_t rc2 = 0;
 
         int pFail = pipe(p);
 
@@ -167,7 +167,6 @@ int main(int argc, char * argv[]) {
                 close(p[0]); //close original read side of pipe, connection still in File Descriptor 0
 
                 myargv[0] = strdup(secondPathName);
-                myargv[1] = 0;
 
                 if (oFileName != 0) //if -o case present, wire -o file into standard output, last in the sequence
                 {
