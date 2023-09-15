@@ -167,6 +167,7 @@ int main(int argc, char * argv[]) {
                 close(p[0]); //close original read side of pipe, connection still in File Descriptor 0
 
                 myargv[0] = strdup(secondPathName);
+                myargv[1] = 0;
 
                 if (oFileName != 0) //if -o case present, wire -o file into standard output, last in the sequence
                 {
