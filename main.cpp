@@ -171,7 +171,7 @@ int main(int argc, char * argv[]) {
 
                 if (oFileName != 0) //if -o case present, wire -o file into standard output, last in the sequence
                 {
-                    int fd2 = open(oFileName, O_SYNC, S_IRWXU); //overwrite mode
+                    int fd2 = open(oFileName, O_WRONLY, S_IRUSR); //overwrite mode
                     if (fd2 > 0)
                     {
                         close(STDOUT_FILENO);
@@ -186,7 +186,7 @@ int main(int argc, char * argv[]) {
                 }
                 else if (aFileName != 0) //if -a case present, wire -a file into standard output, last in the sequence
                 {
-                    int fd2 = open(aFileName, O_APPEND, S_IRWXU); //append mode
+                    int fd2 = open(aFileName, O_APPEND | O_WRONLY, S_IRUSR); //append mode
                     if (fd2 > 0)
                     {
                         close(STDOUT_FILENO);
@@ -213,10 +213,10 @@ int main(int argc, char * argv[]) {
 
             close(p[0]);
             close(p[1]); //closing read and write sides of pipe
-            waitpid(rc, &wstatus, 0); //wait until c1 is complete
-            printf("Child 1: %d returns: %d\n", rc, WEXITSTATUS(wstatus));
-            waitpid(rc2, &wstatus, 0); //wait until c2 is complete
+            waitpid(rc2, &wstatus, 0); //wait until c1 is complete
             printf("Child 2: %d returns: %d\n", rc2, WEXITSTATUS(wstatus));
+            waitpid(rc, &wstatus, 0); //wait until c2 is complete
+            printf("Child 1: %d returns: %d\n", rc, WEXITSTATUS(wstatus));
 
         }
     
